@@ -3,6 +3,7 @@ __pycache__/
 *.py[codz]
 *$py.class
 model/*
+src/tests.py
 
 # C extensions
 *.so
