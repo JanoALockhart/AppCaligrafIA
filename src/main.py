@@ -1,11 +1,16 @@
 import argparse
+import cv2
 import keras
+from matplotlib import pyplot as plt
 import tensorflow as tf
 from line_splitter import LineSplitter
 import settings
+from collections import Counter
 
 VOCABULARY_LIST = [' ', '!', '"', '#', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '}', '¤', '°', '²', 'È', 'É', 'à', 'â', 'ç', 'è', 'é', 'ê', 'ë', 'î', 'ï', 'ô', 'ö', 'ù', 'û', '€']
 INPUT_IMG_SHAPE = (32, 256, 1)
+LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+decoding_function = keras.layers.StringLookup(vocabulary=VOCABULARY_LIST, oov_token="", invert=True)
 
 def main():
     parser = argparse.ArgumentParser(description="Application to take pictures of handwritten letters (A..Z) from students and recommend which ones to practice more")
@@ -14,38 +19,57 @@ def main():
     args = parser.parse_args()
 
     img_path = f"{settings.PRODUCTION_MODEL_FOLDER}{args.file}"
-    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    splitter = LineSplitter(img_path, letters)
+    
+    splitter = LineSplitter(img_path, LETTERS)
     line_images = splitter.get_lines()
 
     # create model
     model_path = f"{settings.PRODUCTION_MODEL_FOLDER}{args.model}"
     print(VOCABULARY_LIST)
-    #model_processing(model_path)
-    
-    
+    predictions = model_processing(model_path, line_images)
+
     # load weights
     # evaluate
 
     # compare results
     # recommend letters
 
-    pass
-
 def model_processing(model_path, lines_images):
     model = keras.models.load_model(filepath=model_path, compile=False)
-    
-    for lines in lines_images:
-        img = preprocess_image(lines.img)
+    model.summary()
+    print(model.input_shape)
+    predictions = {}
+    for line in lines_images:#[0:1]:
+        img_pre = preprocess_image(line.img)
+        img = tf.expand_dims(img_pre, axis=0)
         logits = model.predict(img)
         predicted_string = decode_logits(logits)
-        print(predicted_string)
+        predictions[line] = predicted_string
+
+        count = Counter(predicted_string)
+
+
+        plt.imshow(img_pre)
+        only_chars = predicted_string.replace(" ", "")
+        plt.title(f"{line.char}: {predicted_string} - Acc: {count[line.char]/len(only_chars)}")
+        plt.show()
+
+    return predictions
 
 def decode_logits(logits):
-    #TODO
-    pass
+    print(logits.shape)
+
+    input_len = tf.ones(logits.shape[0]) * logits.shape[1]
+    top_paths, probabilities = keras.ops.ctc_decode(logits, sequence_lengths=input_len, strategy="greedy")
+    y_pred_ctc_decoded = top_paths[0][0]
+    pred_string = tf.strings.reduce_join(decoding_function(y_pred_ctc_decoded)).numpy().decode("utf-8")
+    return pred_string
+
 
 def preprocess_image(img):
+    start = 130
+    img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 10)
+    img = img[:, start:512+start]
     img = tf.convert_to_tensor(img)
     img = tf.image.convert_image_dtype(img, tf.float32)
     img = tf.expand_dims(img, axis=-1)
