@@ -26,35 +26,31 @@ def main():
     # create model
     model_path = f"{settings.PRODUCTION_MODEL_FOLDER}{args.model}"
     print(VOCABULARY_LIST)
-    predictions = model_processing(model_path, line_images)
-
-    # load weights
-    # evaluate
-
-    # compare results
-    # recommend letters
+    recomendations = model_processing(model_path, line_images)
+    print(recomendations)
 
 def model_processing(model_path, lines_images):
     model = keras.models.load_model(filepath=model_path, compile=False)
     model.summary()
     print(model.input_shape)
-    predictions = {}
+    recomendations = {}
     for line in lines_images:#[0:1]:
         img_pre = preprocess_image(line.img)
         img = tf.expand_dims(img_pre, axis=0)
         logits = model.predict(img)
         predicted_string = decode_logits(logits)
-        predictions[line] = predicted_string
 
-        count = Counter(predicted_string)
-
+        count = Counter(predicted_string)        
+        only_chars = predicted_string.replace(" ", "")
+        accuracy = count[line.char]/len(only_chars)
+        recomendations[line.char] = accuracy
 
         plt.imshow(img_pre)
-        only_chars = predicted_string.replace(" ", "")
-        plt.title(f"{line.char}: {predicted_string} - Acc: {count[line.char]/len(only_chars)}")
+        plt.title(f"{line.char}: {predicted_string} - Acc: {accuracy}")
         plt.show()
 
-    return predictions
+    sorted_recomendations = sorted(recomendations.items(), key=lambda item: item[1])
+    return sorted_recomendations
 
 def decode_logits(logits):
     print(logits.shape)
