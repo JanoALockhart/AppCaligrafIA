@@ -16,51 +16,57 @@ class LineSplitter:
     
     def _process_image(self, path):
         img = self._open_image(path)
-        cropped = self._crop_text_block(img)
-        self._create_lines(cropped)
+        line_heights = self._detect_lines(img)
+        self._create_lines(img, line_heights)
     
-    def _create_lines(self, cropped):
-        error = 10
-        img_height = cropped.shape[0]
-        line_height = img_height // len(self.alphabet)
-        for i, char in enumerate(self.alphabet):
-            linear_error = int((i/len(self.alphabet))*error)
-            line_vertical_start = i * line_height - linear_error
-            line_vertical_start = max(0, line_vertical_start)
-            line_estimated_height = line_height + 2 * error
-            line_vertical_end = min(line_vertical_start+line_estimated_height, img_height)
+    def _detect_lines(self, img):
+        img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 4)
+        img = cv2.GaussianBlur(img, (5, 5), 0)
 
-            line = cropped[line_vertical_start:line_vertical_end,:]
-            self.lines.append(Line(char, line))
+        edges = cv2.Canny(img, threshold1=50, threshold2=200)
+        edges = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
+        lines = cv2.HoughLinesP(edges, rho=1, theta=np.pi/180, threshold=50, minLineLength=60)
 
-    def _crop_text_block(self, original_img):
-        BORDER = 15
+        heights = list(map(lambda line: (line[0][1]+line[0][3]) // 2, lines))
+        sorted_heights = sorted(heights)
 
-        gray_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2GRAY)
-        img = gray_img.copy()
-        img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 4)
+        separations = self._get_separators(sorted_heights, threshold = 16)
+        row_heights = self._get_line_heights(sorted_heights, separations)
 
-        img = cv2.GaussianBlur(img, (33, 33), 0)
-        ret, img = cv2.threshold(img, thresh=32, maxval=255, type=cv2.THRESH_BINARY)
-        img = cv2.dilate(img, np.ones((2*BORDER + 1, 255), np.uint8), iterations=1)
+        return row_heights
 
-        contours, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        contours = sorted(contours, key=cv2.contourArea, reverse=True)
-        cv2.drawContours(original_img, contours, -1, (0, 255, 0), 5)
+    def _get_separators(self, heights, threshold):
+        indexes = [0]
+        for i in range(0, len(heights)-1):
+            if heights[i+1]-heights[i] > threshold:
+                indexes.append(i)
 
-        biggest_contour = max(contours, key=cv2.contourArea)
+        indexes.append(len(heights)-1)
 
-        x, y, w, h = cv2.boundingRect(biggest_contour)
-        img2 = original_img.copy()
-        cv2.rectangle(img2, (x, y), (x+w, y+h), (40, 100, 250), 2)
+        return indexes
+    
+    def _get_line_heights(self, sorted_heights, separations):
+        line_heights = []
+        for i in range(0, len(separations)-1):
+            idx1 = separations[i]
+            idx2 = separations[i+1]
+            group = sorted_heights[idx1+1:idx2]
 
-        cropped = gray_img[y+BORDER:y+h-BORDER, x:x+w]
-
-        return cropped
+            average = sum(group)//len(group)
+            line_heights.append(average)
+        
+        return line_heights
+    
+    def _create_lines(self, img, row_heights):
+        for i in range(0, len(row_heights)-1):
+            img_line = img[row_heights[i]:row_heights[i+1], :]
+            self.lines.append(Line(self.alphabet[i], img_line))
 
     def _open_image(self, path):
         img = cv2.imread(path)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        border = 50
+        img = img[border:img.shape[0]-border, border:img.shape[1]-border] # crop
 
         return img
 

@@ -27,12 +27,11 @@ def main():
     model_path = f"{settings.PRODUCTION_MODEL_FOLDER}{args.model}"
     print(VOCABULARY_LIST)
     recomendations = model_processing(model_path, line_images)
-    print(recomendations)
+    print("RECOMENDATIONS: ", recomendations)
 
 def model_processing(model_path, lines_images):
     model = keras.models.load_model(filepath=model_path, compile=False)
-    model.summary()
-    print(model.input_shape)
+    
     recomendations = {}
     for line in lines_images:#[0:1]:
         img_pre = preprocess_image(line.img)
