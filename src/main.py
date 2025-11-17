@@ -3,7 +3,7 @@ import cv2
 import keras
 from matplotlib import pyplot as plt
 import tensorflow as tf
-from line_splitter import LineSplitter
+import line_splitter
 import settings
 from collections import Counter
 
@@ -21,8 +21,7 @@ def main():
 
     img_path = f"{settings.IMAGES_FOLDER}{args.file}"
     
-    splitter = LineSplitter(img_path, LETTERS)
-    line_images = splitter.get_lines()
+    line_images = line_splitter._process_image(img_path, LETTERS)
 
     # create model
     model_path = f"{settings.PRODUCTION_MODEL_FOLDER}{args.model}"
@@ -34,19 +33,22 @@ def model_processing(model_path, lines_images):
     model = keras.models.load_model(filepath=model_path, compile=False)
     
     recomendations = {}
-    for line in lines_images[0:1]:
-        img_pre = preprocess_image(line.img)
+
+    for letter_line in lines_images.keys():
+        img_pre = preprocess_image(lines_images[letter_line])
         img = tf.expand_dims(img_pre, axis=0)
         logits = model.predict(img)
         predicted_string = decode_logits(logits)
+
         print("PRED", predicted_string)
+        
         count = Counter(predicted_string)        
         only_chars = predicted_string.replace(" ", "")
-        accuracy = count[line.char]/len(only_chars)
-        recomendations[line.char] = accuracy
+        accuracy = count[letter_line]/len(only_chars)
+        recomendations[letter_line] = accuracy
 
         plt.imshow(img_pre)
-        plt.title(f"{line.char}: {predicted_string} - Acc: {accuracy}")
+        plt.title(f"{letter_line}: {predicted_string} - Acc: {accuracy}")
         plt.show()
 
     sorted_recomendations = sorted(recomendations.items(), key=lambda item: item[1])
