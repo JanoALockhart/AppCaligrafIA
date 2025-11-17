@@ -18,7 +18,7 @@ def main():
     parser.add_argument("--file", required=True, type=str, help=f"The file name of the image of the student letters saved in {settings.PRODUCTION_MODEL_FOLDER}")
     args = parser.parse_args()
 
-    img_path = f"{settings.PRODUCTION_MODEL_FOLDER}{args.file}"
+    img_path = f"{settings.IMAGES_FOLDER}{args.file}"
     
     splitter = LineSplitter(img_path, LETTERS)
     line_images = splitter.get_lines()
@@ -33,7 +33,7 @@ def model_processing(model_path, lines_images):
     model = keras.models.load_model(filepath=model_path, compile=False)
     
     recomendations = {}
-    for line in lines_images:#[0:1]:
+    for line in lines_images[0:1]:
         img_pre = preprocess_image(line.img)
         img = tf.expand_dims(img_pre, axis=0)
         logits = model.predict(img)
