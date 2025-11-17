@@ -16,7 +16,7 @@ decoding_function = keras.layers.StringLookup(vocabulary=VOCABULARY_LIST, oov_to
 def main():
     parser = argparse.ArgumentParser(description="Application to take pictures of handwritten letters (A..Z) from students and recommend which ones to practice more")
     parser.add_argument("--model", required=True, type=str, help=f"The file name of the .keras model saved in {settings.PRODUCTION_MODEL_FOLDER}")
-    parser.add_argument("--file", required=True, type=str, help=f"The file name of the image of the student letters saved in {settings.PRODUCTION_MODEL_FOLDER}")
+    parser.add_argument("--file", required=True, type=str, help=f"The file name of the image of the student letters saved in {settings.IMAGES_FOLDER}")
     args = parser.parse_args()
 
     img_path = f"{settings.IMAGES_FOLDER}{args.file}"
@@ -41,7 +41,7 @@ def model_processing(model_path, lines_images):
         predicted_string = decode_logits(logits)
 
         print("PRED", predicted_string)
-        
+
         count = Counter(predicted_string)        
         only_chars = predicted_string.replace(" ", "")
         accuracy = count[letter_line]/len(only_chars)
