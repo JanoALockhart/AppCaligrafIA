@@ -7,7 +7,8 @@ from line_splitter import LineSplitter
 import settings
 from collections import Counter
 
-VOCABULARY_LIST = [' ', '!', '"', '#', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '}', '¤', '°', '²', 'È', 'É', 'à', 'â', 'ç', 'è', 'é', 'ê', 'ë', 'î', 'ï', 'ô', 'ö', 'ù', 'û', '€']
+#VOCABULARY_LIST = [' ', '!', '"', '#', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '}', '¤', '°', '²', 'È', 'É', 'à', 'â', 'ç', 'è', 'é', 'ê', 'ë', 'î', 'ï', 'ô', 'ö', 'ù', 'û', '€']
+VOCABULARY_LIST = list(" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 INPUT_IMG_SHAPE = (32, 256, 1)
 LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 decoding_function = keras.layers.StringLookup(vocabulary=VOCABULARY_LIST, oov_token="", invert=True)
@@ -38,7 +39,7 @@ def model_processing(model_path, lines_images):
         img = tf.expand_dims(img_pre, axis=0)
         logits = model.predict(img)
         predicted_string = decode_logits(logits)
-
+        print("PRED", predicted_string)
         count = Counter(predicted_string)        
         only_chars = predicted_string.replace(" ", "")
         accuracy = count[line.char]/len(only_chars)
@@ -62,15 +63,15 @@ def decode_logits(logits):
 
 
 def preprocess_image(img):
-    start = 130
+    start = 84
     img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 10)
-    img = img[:, start:512+start]
+    #img = img[:, start:]
     img = tf.convert_to_tensor(img)
     img = tf.image.convert_image_dtype(img, tf.float32)
     img = tf.expand_dims(img, axis=-1)
 
     img = 1.0 - img
-    img = tf.image.resize_with_pad(img, 32, 256)
+    img = tf.image.resize_with_pad(img, 32, 512)
     img = 1.0 - img
 
     img = (img - 0.5) / 0.5
