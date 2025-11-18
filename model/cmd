@@ -1,3 +1,0 @@
-python main.py --model ALL_12CER.keras --file letters_lines.jpeg
-python main.py --model EMNIST_7CER.keras --file letters_lines.jpeg
-python main.py --model EMNIST_13CER_RSPACES.keras --file letters_lines.jpeg
