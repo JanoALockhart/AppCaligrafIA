@@ -1,14 +1,14 @@
 {
     "models": [
         {
-            "id": "experiment-01",
+            "id": "exp-01",
             "filename": "EMNIST_13CER_RSPACES.keras",
             "name": "Basic EMNIST",
             "description": "Model trained with artificial letters rows from EMNIST without data augmentation",
             "input_size": [32, 512]
         },
         {
-            "id": "experiment-00",
+            "id": "exp-00",
             "filename": "ALL_12CER.keras",
             "name": "Phrases IAM CVL RIMES",
             "description": "Replace this model with anotherone from the experiments. This one is just a placeholder",

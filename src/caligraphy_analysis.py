@@ -2,14 +2,19 @@ from collections import Counter
 import cv2
 import keras
 from matplotlib import pyplot as plt
+import numpy as np
 import tensorflow as tf
 
 import line_splitter
 import settings
 
+def process_image_form(file, model_id):
+    file_bytes = np.frombuffer(file.read(), np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
+
 
 def analyze_caligraphy(args):
-    VOCABULARY_LIST = list(" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+    VOCABULARY_LIST = list(" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") #TODO: to the manifest
     #VOCABULARY_LIST = [' ', '!', '"', '#', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '}', '¤', '°', '²', 'È', 'É', 'à', 'â', 'ç', 'è', 'é', 'ê', 'ë', 'î', 'ï', 'ô', 'ö', 'ù', 'û', '€']
     print(VOCABULARY_LIST)
     LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -17,7 +22,8 @@ def analyze_caligraphy(args):
     img_path = f"{settings.IMAGES_FOLDER}{args.file}"
     model_path = f"{settings.PRODUCTION_MODEL_FOLDER}{args.model}"
 
-    line_images = line_splitter._process_image(img_path, LETTERS)
+    img = _open_image(img_path)
+    line_images = line_splitter._process_image(img, LETTERS)
     recomendations = model_processing(model_path, line_images, decoding_function)
     return recomendations
 
@@ -66,11 +72,18 @@ def model_processing(model_path, lines_images, decoding_function):
         accuracy = count[letter_line]/len(only_chars)
         recomendations[letter_line] = accuracy
 
-        plt.imshow(img_pre)
-        plt.title(f"{letter_line}: {predicted_string} - Acc: {accuracy}")
-        plt.show()
+        #plt.imshow(img_pre)
+        #plt.title(f"{letter_line}: {predicted_string} - Acc: {accuracy}")
+        #plt.show()
 
     sorted_recomendations = sorted(recomendations.items(), key=lambda item: item[1])
     return sorted_recomendations
+
+
+def _open_image(path):
+    img = cv2.imread(path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    return img
 
 

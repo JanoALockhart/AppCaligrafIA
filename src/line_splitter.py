@@ -1,24 +1,23 @@
 import cv2
 import numpy as np
 
-class Line:
-    def __init__(self, char, img):
-        self.char = char
-        self.img = img
+from caligraphy_analysis import _open_image
     
-def _process_image(path, alphabet):
-    img = _open_image(path)
+def _process_image(img, alphabet):
     line_heights = _detect_lines(img)
     classified_rows = _create_lines(img, line_heights, alphabet)
 
     return classified_rows
 
 def _detect_lines(img):
+    border = 50
+    img = img[border:img.shape[0]-border, border:img.shape[1]-border] # crop
     img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 4)
     img = cv2.GaussianBlur(img, (5, 5), 0)
 
     edges = cv2.Canny(img, threshold1=50, threshold2=200)
     edges = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
+
     lines = cv2.HoughLinesP(edges, rho=1, theta=np.pi/180, threshold=50, minLineLength=60)
 
     heights = list(map(lambda line: (line[0][1]+line[0][3]) // 2, lines))
@@ -59,10 +58,3 @@ def _create_lines(img, row_heights, alphabet):
 
     return rows
 
-def _open_image(path):
-    img = cv2.imread(path)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    border = 50
-    img = img[border:img.shape[0]-border, border:img.shape[1]-border] # crop
-
-    return img
