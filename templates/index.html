@@ -25,7 +25,7 @@
 
     <h1>Calligraphy Analyzer</h1>
 
-    <form method="POST" action="/process" enctype="multipart/form-data">
+    <form method="POST" action="{{ url_for('analyse') }}" enctype="multipart/form-data">
         <label for="model">Select model:</label>
         <select id="model" name="model">
             {% for m in models %}
