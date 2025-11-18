@@ -5,12 +5,21 @@ from matplotlib import pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-import line_splitter
-import settings
+import src.line_splitter as line_splitter
+import src.settings as settings
 
-def process_image_form(file, model_id):
+def process_image_form(file, selected_model):
     file_bytes = np.frombuffer(file.read(), np.uint8)
     img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
+
+    LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    line_images = line_splitter._process_image(img, LETTERS)
+    model_path = f"{settings.PRODUCTION_MODEL_FOLDER}{selected_model["filename"]}"
+
+    decoding_function = keras.layers.StringLookup(vocabulary=list(selected_model["vocabulary"]), oov_token="", invert=True)
+    recomendations = model_processing(model_path, line_images, decoding_function)
+    
+    return recomendations, line_images
 
 
 def analyze_caligraphy(args):
@@ -25,9 +34,9 @@ def analyze_caligraphy(args):
     img = _open_image(img_path)
     line_images = line_splitter._process_image(img, LETTERS)
     recomendations = model_processing(model_path, line_images, decoding_function)
-    return recomendations
+    return recomendations, line_images
 
-def preprocess_image(img):
+def preprocess_row_image(img):
     start = 84
     img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 10)
     #img = img[:, start:]
@@ -45,8 +54,6 @@ def preprocess_image(img):
 
 
 def decode_logits(logits, decoding_function):
-    print(logits.shape)
-
     input_len = tf.ones(logits.shape[0]) * logits.shape[1]
     top_paths, probabilities = keras.ops.ctc_decode(logits, sequence_lengths=input_len, strategy="greedy")
     y_pred_ctc_decoded = top_paths[0][0]
@@ -60,7 +67,7 @@ def model_processing(model_path, lines_images, decoding_function):
     recomendations = {}
 
     for letter_line in lines_images.keys():
-        img_pre = preprocess_image(lines_images[letter_line])
+        img_pre = preprocess_row_image(lines_images[letter_line])
         img = tf.expand_dims(img_pre, axis=0)
         logits = model.predict(img)
         predicted_string = decode_logits(logits, decoding_function)
@@ -72,10 +79,7 @@ def model_processing(model_path, lines_images, decoding_function):
         accuracy = count[letter_line]/len(only_chars)
         recomendations[letter_line] = accuracy
 
-        #plt.imshow(img_pre)
-        #plt.title(f"{letter_line}: {predicted_string} - Acc: {accuracy}")
-        #plt.show()
-
+        
     sorted_recomendations = sorted(recomendations.items(), key=lambda item: item[1])
     return sorted_recomendations
 

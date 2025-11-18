@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 import json
 import src.settings as settings
+import src.caligraphy_analysis as ca
 
 app = Flask(__name__)
 
@@ -24,9 +25,9 @@ def home():
 def analyse():
     file = request.files["image"]
     model_id = request.form.get("model")
-    model_info = MODELS_MAP[model_id]
-    model_path = f"{settings.PRODUCTION_MODEL_FOLDER}{model_info["filename"]}"
-    #caligraphy_analysis.process_image_form(file, model_path)
+    selected_model = MODELS_MAP[model_id]
+    sorted_recommendations, image_rows = ca.process_image_form(file, selected_model)
+    print(sorted_recommendations)
     
     # Template
-    return f"{model_path}"
+    return f"{selected_model}"

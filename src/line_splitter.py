@@ -1,20 +1,15 @@
 import cv2
+from matplotlib import pyplot as plt
 import numpy as np
-
-from caligraphy_analysis import _open_image
     
 def _process_image(img, alphabet):
+    img = preprocess_full_image(img)
     line_heights = _detect_lines(img)
     classified_rows = _create_lines(img, line_heights, alphabet)
 
     return classified_rows
 
 def _detect_lines(img):
-    border = 50
-    img = img[border:img.shape[0]-border, border:img.shape[1]-border] # crop
-    img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 4)
-    img = cv2.GaussianBlur(img, (5, 5), 0)
-
     edges = cv2.Canny(img, threshold1=50, threshold2=200)
     edges = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
 
@@ -27,6 +22,13 @@ def _detect_lines(img):
     row_heights = _get_line_heights(sorted_heights, separations)
 
     return row_heights
+
+def preprocess_full_image(img):
+    border = 50
+    img = img[border:img.shape[0]-border, border:img.shape[1]-border] # crop
+    img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 4)
+    img = cv2.GaussianBlur(img, (5, 5), 0)
+    return img
 
 def _get_separators(heights, threshold):
     indexes = [0]
@@ -52,9 +54,11 @@ def _get_line_heights(sorted_heights, separations):
 
 def _create_lines(img, row_heights, alphabet):
     rows = {}
+    
     for i in range(0, len(row_heights)-1):
+        
         img_line = img[row_heights[i]:row_heights[i+1], :]
         rows[alphabet[i]] = img_line
-
+        
     return rows
 
