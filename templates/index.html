@@ -19,6 +19,14 @@
         .accuracy {
             font-family: sans-serif;
         }
+
+        #image-preview {
+            width: 300px;      /* fixed width */
+            height: auto;      /* keep aspect ratio */
+            border: 1px solid #ccc;
+            display: none;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -29,18 +37,22 @@
         <label for="model">Select model:</label>
         <select id="model" name="model">
             {% for m in models %}
-            <option value="{{ m }}">{{ m }}</option>
+            <option value="{{ m.id }}">{{ m.name }}</option>
             {% endfor %}
         </select>
 
         <br><br>
 
         <label for="image">Upload image:</label>
-        <input type="file" id="image" name="image" accept="image/*">
+        <input type="file" id="image" name="image" accept="image/*" onchange="previewImage(event)">
+        <br><br>
+        <button type="submit">Analyze</button>
+
+        <img id="image-preview">
 
         <br><br>
 
-        <button type="submit">Analyze</button>
+        
     </form>
 
     <hr>
@@ -68,5 +80,16 @@
 
     {% endif %}
 
+
+<script>
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const preview = document.getElementById('image-preview');
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+    }
+</script>
 </body>
 </html>
