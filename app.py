@@ -44,3 +44,13 @@ def download_sheet():
         download_name="template.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+@app.route("/download-recommendations", methods=["POST"])
+def download_recommendations():
+    recommendations = json.loads(request.form["recomendations"])
+    top_letters = request.form.get("top_letters")
+    rows_per_letters = request.form.get("rows_per_letter")
+
+    
+
+    return "Downloading"

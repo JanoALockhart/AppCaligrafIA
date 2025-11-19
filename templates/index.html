@@ -86,7 +86,7 @@
                         <img src="data:image/png;base64, {{ image }}" width="512">
                     </th>
                     <th>{{ predictions[letter] }}</th>
-                    <th>{{ "%.2fs"|format(recomendations[letter] * 100) }}</th>
+                    <th>{{ "%.2f"|format(recomendations[letter] * 100) }}%</th>
                 </tr>
                 {% endfor %}
                 
@@ -97,6 +97,18 @@
         <div class="section">
             <h2>Recomendations</h2>
             {% if recomendations %} 
+            <form action="{{ url_for('download_recommendations') }}" method="POST">
+                <input type="hidden" name="recomendations" value='{{ recomendations | tojson | safe }}'>
+                
+                <label>Top letters:</label>
+                <input type="number" name="top_letters" min="1" max="26" step="1" value="5">
+                <br>
+                <label>Rows per letter:</label>
+                <input type="number" name="rows_per_letter" min="1" step="1" value="3">
+
+                <button type="submit">Download Custom Activity</button>
+            </form>
+            <br>
             <table>
                 <tr>
                     <th>Letter</th>

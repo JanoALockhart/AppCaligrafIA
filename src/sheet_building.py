@@ -13,6 +13,14 @@ def build_template_sheet():
 
     return output
 
+def build_recommendation_sheet(letters, amount):
+    output = BytesIO()
+
+    build_letter_rows_sheet(output, name="template", letters=letters)
+    output.seek(0)
+
+    return output
+
 def build_letter_rows_sheet(file_obj, name, letters):
     workbook = xlsxwriter.Workbook(file_obj, {"in_memmory":True})
     worksheet = workbook.add_worksheet(name)
