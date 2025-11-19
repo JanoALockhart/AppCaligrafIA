@@ -1,9 +1,12 @@
+import base64
 from collections import Counter
+from io import BytesIO
 import cv2
 import keras
 from matplotlib import pyplot as plt
 import numpy as np
 import tensorflow as tf
+from PIL import Image
 
 import src.line_splitter as line_splitter
 import src.settings as settings
@@ -19,7 +22,9 @@ def process_image_form(file, selected_model):
     decoding_function = keras.layers.StringLookup(vocabulary=list(selected_model["vocabulary"]), oov_token="", invert=True)
     recomendations = model_processing(model_path, line_images, decoding_function)
     
-    return recomendations, line_images
+    row_images_b64 = {letter: _convert_to_base64(image) for letter, image in line_images.items()}
+
+    return recomendations, row_images_b64
 
 
 def analyze_caligraphy(args):
@@ -35,6 +40,13 @@ def analyze_caligraphy(args):
     line_images = line_splitter._process_image(img, LETTERS)
     recomendations = model_processing(model_path, line_images, decoding_function)
     return recomendations, line_images
+
+def _convert_to_base64(image):
+    pil_img = Image.fromarray(image)
+    buffer = BytesIO()
+    pil_img.save(buffer, format="PNG")
+
+    return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 def preprocess_row_image(img):
     start = 84
@@ -80,7 +92,7 @@ def model_processing(model_path, lines_images, decoding_function):
         recomendations[letter_line] = accuracy
 
         
-    sorted_recomendations = sorted(recomendations.items(), key=lambda item: item[1])
+    sorted_recomendations = dict(sorted(recomendations.items(), key=lambda item: item[1]))
     return sorted_recomendations
 
 

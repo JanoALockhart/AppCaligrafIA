@@ -27,7 +27,14 @@ def analyse():
     model_id = request.form.get("model")
     selected_model = MODELS_MAP[model_id]
     sorted_recommendations, image_rows = ca.process_image_form(file, selected_model)
-    print(sorted_recommendations)
-    
+
+    # TODO: return images and scores to the client
     # Template
-    return f"{selected_model}"
+
+    
+
+    return render_template("index.html", 
+                           models=MODELS_MAP.values(), 
+                           img_rows=image_rows, 
+                           recomendations=sorted_recommendations
+                           )

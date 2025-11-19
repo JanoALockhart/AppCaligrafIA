@@ -4,6 +4,14 @@
     <meta charset="utf-8">
     <title>Calligraphy Recommendation Prototype</title>
     <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+        }
+        .section {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
         .row-container {
             border: 1px solid #ccc;
             padding: 6px;
@@ -32,53 +40,73 @@
 <body>
 
     <h1>Calligraphy Analyzer</h1>
+    <div class="grid-container">
+        <div class="section">
+            <form method="POST" action="{{ url_for('analyse') }}" enctype="multipart/form-data">
+                <label for="model">Select model:</label>
+                <select id="model" name="model">
+                    {% for m in models %}
+                    <option value="{{ m.id }}">{{ m.name }}</option>
+                    {% endfor %}
+                </select>
 
-    <form method="POST" action="{{ url_for('analyse') }}" enctype="multipart/form-data">
-        <label for="model">Select model:</label>
-        <select id="model" name="model">
-            {% for m in models %}
-            <option value="{{ m.id }}">{{ m.name }}</option>
-            {% endfor %}
-        </select>
+                <br><br>
 
-        <br><br>
+                <label for="image">Upload image:</label>
+                <input type="file" id="image" name="image" accept="image/*" onchange="previewImage(event)">
+                <br><br>
+                <button type="submit">Analyze</button>
 
-        <label for="image">Upload image:</label>
-        <input type="file" id="image" name="image" accept="image/*" onchange="previewImage(event)">
-        <br><br>
-        <button type="submit">Analyze</button>
+                <img id="image-preview">
 
-        <img id="image-preview">
+                <br><br>
 
-        <br><br>
-
+                
+            </form>
+        </div>
         
-    </form>
-
-    <hr>
-
-    {% if rows %}
-    <h2>Extracted Rows</h2>
-
-    {% for i in range(26) %}
-    <div class="row-container">
-        <div>
-            <strong>{{ letters[i] }}</strong>
+        <div class="section">
+            <h2>Extracted Rows</h2>
+            {% if img_rows %}
+            <table>
+                <tr>
+                    <th>Letter</th>
+                    <th>Image</th>
+                </tr>
+                {% for letter, image in img_rows.items() %}
+                <tr>
+                    <th>{{ letter }}:</th>
+                    <th>
+                        <img src="data:image/png;base64, {{ image }}" width="512">
+                    </th>
+                </tr>
+                {% endfor %}
+                
+            </table>
+            {% endif %}
         </div>
 
-        {% if rows[i] %}
-        <img class="row-image" src="{{ rows[i] }}" alt="Row {{ i }}">
-        {% else %}
-        <div>No image</div>
-        {% endif %}
-
-        <div class="accuracy">
-            Accuracy: {{ accuracies[i] }}%
+        <div class="section">
+            <h2>Recomendations</h2>
+            {% if recomendations %} 
+            <table>
+                <tr>
+                    <th>Letter</th>
+                    <th>Accuracy</th>
+                </tr>
+                {% for letter, accuracy in recomendations.items() %}
+                <tr>
+                    <th>{{ letter }}:</th>
+                    <th>
+                        {{ "%.2f"|format(accuracy * 100) }}%
+                    </th>
+                </tr>
+                {% endfor %}
+                
+            </table>
+            {% endif %}
         </div>
     </div>
-    {% endfor %}
-
-    {% endif %}
 
 
 <script>
