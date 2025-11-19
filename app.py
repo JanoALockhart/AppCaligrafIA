@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 import json
 import src.settings as settings
 import src.caligraphy_analysis as ca
+import src.sheet_building as sb
 
 app = Flask(__name__)
 
@@ -34,3 +35,12 @@ def analyse():
                            recomendations=sorted_recommendations,
                            predictions=predictions
                            )
+
+@app.route("/download-template")
+def download_sheet():
+    return send_file(
+        sb.build_template_sheet(),
+        as_attachment=True,
+        download_name="template.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )

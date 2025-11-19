@@ -42,6 +42,10 @@
     <h1>Calligraphy Analyzer</h1>
     <div class="grid-container">
         <div class="section">
+            <a href="{{ url_for('download_sheet') }}">Download Template</a>
+
+            <br><br>
+            
             <form method="POST" action="{{ url_for('analyse') }}" enctype="multipart/form-data">
                 <label for="model">Select model:</label>
                 <select id="model" name="model">
