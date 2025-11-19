@@ -13,15 +13,20 @@ def build_template_sheet():
 
     return output
 
-def build_recommendation_sheet(letters, amount):
+def build_recommendation_sheet(recomendations, amount, rows_per_letter):
     output = BytesIO()
 
-    build_letter_rows_sheet(output, name="template", letters=letters)
+    sorted_recommendations = sorted(recomendations.items(), key=lambda item: item[1])
+    letters = [letter for (letter, _) in sorted_recommendations]
+    take_letters = letters[:amount]
+    print(take_letters)
+    letters = "".join(take_letters)
+    build_letter_rows_sheet(output, name="template", letters=letters, rows_per_letter=rows_per_letter)
     output.seek(0)
 
     return output
 
-def build_letter_rows_sheet(file_obj, name, letters):
+def build_letter_rows_sheet(file_obj, name, letters, rows_per_letter = 1):
     workbook = xlsxwriter.Workbook(file_obj, {"in_memmory":True})
     worksheet = workbook.add_worksheet(name)
 
@@ -39,13 +44,13 @@ def build_letter_rows_sheet(file_obj, name, letters):
 
     row = 0
     for letter in letters:
-        
-        worksheet.set_row_pixels(row, ROW_HEIGHT_PX)
+        for _ in range(rows_per_letter):
+            worksheet.set_row_pixels(row, ROW_HEIGHT_PX)
 
-        worksheet.write(row, 0, letter, letter_format)
-        worksheet.write(row, 1, "", letter_format)
+            worksheet.write(row, 0, letter, letter_format)
+            worksheet.write(row, 1, "", letter_format)
 
-        row += 1
+            row += 1
 
 
     workbook.close()

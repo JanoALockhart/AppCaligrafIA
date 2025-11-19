@@ -48,9 +48,12 @@ def download_sheet():
 @app.route("/download-recommendations", methods=["POST"])
 def download_recommendations():
     recommendations = json.loads(request.form["recomendations"])
-    top_letters = request.form.get("top_letters")
-    rows_per_letters = request.form.get("rows_per_letter")
+    top_letters = int(request.form.get("top_letters"))
+    rows_per_letters = int(request.form.get("rows_per_letter"))
 
-    
-
-    return "Downloading"
+    return send_file(
+        sb.build_recommendation_sheet(recomendations=recommendations, amount=top_letters, rows_per_letter=rows_per_letters),
+        as_attachment=True,
+        download_name="activity.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
