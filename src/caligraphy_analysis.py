@@ -68,8 +68,8 @@ def preprocess_row_image(img):
 def decode_logits(logits, decoding_function):
     input_len = tf.ones(logits.shape[0]) * logits.shape[1]
     top_paths, probabilities = keras.ops.ctc_decode(logits, sequence_lengths=input_len, strategy="greedy")
-    y_pred_ctc_decoded = top_paths[0][0]
-    pred_string = tf.strings.reduce_join(decoding_function(y_pred_ctc_decoded)).numpy().decode("utf-8")
+    y_pred_ctc_decoded = top_paths[0]
+    pred_string = tf.strings.reduce_join(decoding_function(y_pred_ctc_decoded), axis=1)
     return pred_string
 
 
@@ -79,20 +79,19 @@ def model_processing(model_path, lines_images, decoding_function):
     recomendations = {}
     predictions = {}
 
-    for letter_line in lines_images.keys():
-        img_pre = preprocess_row_image(lines_images[letter_line])
-        img = tf.expand_dims(img_pre, axis=0)
-        logits = model.predict(img)
-        predicted_string = decode_logits(logits, decoding_function)
+    batch_images = [preprocess_row_image(img) for img in lines_images.values()]
+    batch_images = tf.stack(batch_images, axis=0)
+    logits = model.predict(batch_images)
+    batch_predicted_string = decode_logits(logits, decoding_function)
 
-        print("PRED", predicted_string)
 
+    for letter, predicted_string in zip(lines_images.keys(), batch_predicted_string):
+        predicted_string = predicted_string.numpy().decode("utf-8")
         count = Counter(predicted_string)
         only_chars = predicted_string.replace(" ", "")
-        accuracy = count[letter_line]/len(only_chars)
-        recomendations[letter_line] = accuracy
-        predictions[letter_line] = predicted_string
-
+        accuracy = count[letter]/len(only_chars)
+        recomendations[letter] = accuracy
+        predictions[letter] = predicted_string
         
     sorted_recomendations = dict(sorted(recomendations.items(), key=lambda item: item[1]))
     return sorted_recomendations, predictions
