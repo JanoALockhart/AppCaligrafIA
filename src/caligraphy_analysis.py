@@ -20,11 +20,11 @@ def process_image_form(file, selected_model):
     model_path = f"{settings.PRODUCTION_MODEL_FOLDER}{selected_model["filename"]}"
 
     decoding_function = keras.layers.StringLookup(vocabulary=list(selected_model["vocabulary"]), oov_token="", invert=True)
-    recomendations = model_processing(model_path, line_images, decoding_function)
+    recomendations, predictions = model_processing(model_path, line_images, decoding_function)
     
     row_images_b64 = {letter: _convert_to_base64(image) for letter, image in line_images.items()}
 
-    return recomendations, row_images_b64
+    return recomendations, row_images_b64, predictions
 
 
 def analyze_caligraphy(args):
@@ -77,6 +77,7 @@ def model_processing(model_path, lines_images, decoding_function):
     model = keras.models.load_model(filepath=model_path, compile=False)
 
     recomendations = {}
+    predictions = {}
 
     for letter_line in lines_images.keys():
         img_pre = preprocess_row_image(lines_images[letter_line])
@@ -90,10 +91,11 @@ def model_processing(model_path, lines_images, decoding_function):
         only_chars = predicted_string.replace(" ", "")
         accuracy = count[letter_line]/len(only_chars)
         recomendations[letter_line] = accuracy
+        predictions[letter_line] = predicted_string
 
         
     sorted_recomendations = dict(sorted(recomendations.items(), key=lambda item: item[1]))
-    return sorted_recomendations
+    return sorted_recomendations, predictions
 
 
 def _open_image(path):

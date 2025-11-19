@@ -67,11 +67,13 @@
         
         <div class="section">
             <h2>Extracted Rows</h2>
-            {% if img_rows %}
+            {% if img_rows and recomendations and predictions %}
             <table>
                 <tr>
                     <th>Letter</th>
                     <th>Image</th>
+                    <th>Model's Prediction</th>
+                    <th>Accuracy</th>
                 </tr>
                 {% for letter, image in img_rows.items() %}
                 <tr>
@@ -79,6 +81,8 @@
                     <th>
                         <img src="data:image/png;base64, {{ image }}" width="512">
                     </th>
+                    <th>{{ predictions[letter] }}</th>
+                    <th>{{ "%.2fs"|format(recomendations[letter] * 100) }}</th>
                 </tr>
                 {% endfor %}
                 
