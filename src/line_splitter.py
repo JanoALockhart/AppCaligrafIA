@@ -26,8 +26,11 @@ def _detect_lines(img):
 def preprocess_full_image(img):
     border = 50
     img = img[border:img.shape[0]-border, border:img.shape[1]-border] # crop
+
+    img = cv2.GaussianBlur(img, (7, 7), 0)
     img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 4)
     img = cv2.GaussianBlur(img, (5, 5), 0)
+    
     return img
 
 def _get_separators(heights, threshold):
@@ -54,7 +57,7 @@ def _get_line_heights(sorted_heights, separations):
 
 def _create_lines(img, row_heights, alphabet):
     rows = {}
-    error_px = 0#4
+    error_px = 6
     start = 80
 
     for i in range(0, len(row_heights)-1):

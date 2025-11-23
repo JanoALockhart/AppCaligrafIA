@@ -1,7 +1,7 @@
 from io import BytesIO
 import xlsxwriter
 
-ROW_HEIGHT_PX = 32
+ROW_HEIGHT_PX = 42
 SECOND_COLUMN_WIDTH = 708
 FIRST_COLUMN_WIDTH = 36
 
@@ -36,7 +36,8 @@ def build_letter_rows_sheet(file_obj, name, letters, rows_per_letter = 1):
         "border": 0,
         "top": 1,
         "bottom": 1,
-        "align": "left"
+        "align": "left",
+        "valign": "vcenter"
     })
 
     worksheet.set_column_pixels(0, 0, FIRST_COLUMN_WIDTH)
