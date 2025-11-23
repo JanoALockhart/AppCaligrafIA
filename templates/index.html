@@ -58,6 +58,17 @@
 
                 <label for="image">Upload image:</label>
                 <input type="file" id="image" name="image" accept="image/*" onchange="previewImage(event)">
+                
+                <br><br>
+                <label>Or choose a default:</label>
+                <select name="default_image" id="defaultSelect">
+                    <option value="">-- None --</option>
+                    <option value="imprenta_mayuscula">Imprenta Mayuscula</option>
+                    <option value="imprenta_minuscula">Imprenda Minuscula</option>
+                    <option value="cursiva_minuscula">Cursiva Minuscula</option>
+                    <option value="cursiva_mayuscula">Cursiva Mayuscula</option>
+                </select>
+
                 <br><br>
                 <button type="submit">Analyze</button>
 

@@ -18,6 +18,9 @@ def load_manifest():
 
 MODELS_MAP = load_manifest()
 
+# TODO: default image
+# TODO: Align paper corners following the tutorial
+# TODO: Use the new printed rows, which are darker
 @app.route("/")
 def home():
     return render_template("index.html", models=MODELS_MAP.values())
