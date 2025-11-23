@@ -55,10 +55,12 @@ def _get_line_heights(sorted_heights, separations):
 def _create_lines(img, row_heights, alphabet):
     rows = {}
     error_px = 0#4
+    start = 80
 
     for i in range(0, len(row_heights)-1):
         
         img_line = img[row_heights[i]+error_px:row_heights[i+1]-error_px, :]
+        img_line = img_line[:, start:]
         rows[alphabet[i]] = img_line
         
     return rows

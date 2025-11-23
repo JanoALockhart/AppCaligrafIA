@@ -46,9 +46,7 @@ def _convert_to_base64(image):
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 def preprocess_row_image(img):
-    start = 84
     img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 10)
-    #img = img[:, start:]
     img = tf.convert_to_tensor(img)
     img = tf.image.convert_image_dtype(img, tf.float32)
     img = tf.expand_dims(img, axis=-1)
