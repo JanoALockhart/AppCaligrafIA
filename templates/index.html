@@ -29,11 +29,12 @@
         }
 
         #image-preview {
-            width: 300px;      /* fixed width */
-            height: auto;      /* keep aspect ratio */
+            width: 300px;
+            height: 470px;     
             border: 1px solid #ccc;
             display: none;
             margin-top: 10px;
+            object-fit: contain;
         }
     </style>
 </head>
@@ -62,17 +63,17 @@
                 <br><br>
                 <label>Or choose a default:</label>
                 <select name="default_image" id="defaultSelect">
-                    <option value="">-- None --</option>
-                    <option value="imprenta_mayuscula">Imprenta Mayuscula</option>
-                    <option value="imprenta_minuscula">Imprenda Minuscula</option>
-                    <option value="cursiva_minuscula">Cursiva Minuscula</option>
-                    <option value="cursiva_mayuscula">Cursiva Mayuscula</option>
+                    <option value="">-- Select Image --</option>
+                    <option value="/static/imprenta_mayuscula.jpeg">Imprenta Mayuscula</option>
+                    <option value="/static/imprenta_minuscula.jpeg">Imprenta Minuscula</option>
+                    <option value="/static/cursiva_minuscula.jpeg">Cursiva Minuscula</option>
+                    <option value="/static/cursiva_mayuscula.jpeg">Cursiva Mayuscula</option>
                 </select>
 
                 <br><br>
                 <button type="submit">Analyze</button>
 
-                <img id="image-preview">
+                <img id="image-preview" src="/static/imprenta_mayuscula.jpeg">
 
                 <br><br>
 
@@ -148,7 +149,18 @@
         const preview = document.getElementById('image-preview');
         preview.src = URL.createObjectURL(file);
         preview.style.display = 'block';
+
+        const select = document.getElementById("defaultSelect")
+        select.value = ""
     }
+
+    document.getElementById('defaultSelect').addEventListener('change', function() {
+        const preview = document.getElementById('image-preview');
+        preview.src = this.value || "";
+        preview.style.display = 'block'
+        const fileInput = document.getElementById("image");
+        fileInput.value = ""
+    });
 </script>
 </body>
 </html>
