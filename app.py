@@ -1,5 +1,9 @@
+import os
+import cv2
 from flask import Flask, render_template, request, send_file
 import json
+
+import numpy as np
 import src.settings as settings
 import src.caligraphy_analysis as ca
 import src.sheet_building as sb
@@ -28,9 +32,19 @@ def home():
 @app.route("/analyse", methods=["POST"])
 def analyse():
     file = request.files["image"]
+    if file:
+        image = np.frombuffer(file.read(), np.uint8)
+        image = cv2.imdecode(image, cv2.IMREAD_GRAYSCALE)
+    else:
+        default_choice = request.form.get("default_image")
+        path = os.path.join(app.static_folder, default_choice)
+        print(app.static_folder)
+        print(path)
+        image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+
     model_id = request.form.get("model")
     selected_model = MODELS_MAP[model_id]
-    sorted_recommendations, image_rows, predictions = ca.process_image_form(file, selected_model)
+    sorted_recommendations, image_rows, predictions = ca.process_image_form(image, selected_model)
 
     return render_template("index.html", 
                            models=MODELS_MAP.values(), 

@@ -11,10 +11,7 @@ from PIL import Image
 import src.line_splitter as line_splitter
 import src.settings as settings
 
-def process_image_form(file, selected_model):
-    file_bytes = np.frombuffer(file.read(), np.uint8)
-    img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
-
+def process_image_form(img, selected_model):
     LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     line_images = line_splitter._process_image(img, LETTERS)
     model_path = f"{settings.PRODUCTION_MODEL_FOLDER}{selected_model["filename"]}"

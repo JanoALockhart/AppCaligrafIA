@@ -54,10 +54,11 @@ def _get_line_heights(sorted_heights, separations):
 
 def _create_lines(img, row_heights, alphabet):
     rows = {}
-    
+    error_px = 0#4
+
     for i in range(0, len(row_heights)-1):
         
-        img_line = img[row_heights[i]:row_heights[i+1], :]
+        img_line = img[row_heights[i]+error_px:row_heights[i+1]-error_px, :]
         rows[alphabet[i]] = img_line
         
     return rows
