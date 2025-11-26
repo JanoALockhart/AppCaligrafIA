@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
     
 def _process_image(img, alphabet):
-    img = preprocess_full_image(img)
+    img = preprocess_page(img)
     line_heights = _detect_lines(img)
     classified_rows = _create_lines(img, line_heights, alphabet)
 
@@ -23,7 +23,7 @@ def _detect_lines(img):
 
     return row_heights
 
-def preprocess_full_image(img):
+def preprocess_page(img):
     border = 50
     img = img[border:img.shape[0]-border, border:img.shape[1]-border] # crop
 
