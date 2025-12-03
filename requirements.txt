@@ -5,3 +5,4 @@ dotenv==0.9.9
 xlsxwriter==3.2.9
 pillow==11.3.0
 tensorflow-cpu==2.20.0
+gunicorn==23.0.0
