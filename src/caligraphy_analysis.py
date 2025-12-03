@@ -3,7 +3,6 @@ from collections import Counter
 from io import BytesIO
 import cv2
 import keras
-from matplotlib import pyplot as plt
 import numpy as np
 import tensorflow as tf
 from PIL import Image
